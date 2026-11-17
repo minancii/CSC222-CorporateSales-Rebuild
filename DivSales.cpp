@@ -36,3 +36,25 @@ double DivSales::getTotalSales() const
 
     return total;
 }
+
+// Allows reading and changing a sales value.
+double& DivSales::operator[](int index)
+{
+    if (index < 0 || index >= numberOfPeriods)
+    {
+        throw std::out_of_range("Invalid sales period index.");
+    }
+
+    return sales[index];
+}
+
+// Allows reading a value without changing the object.
+const double& DivSales::operator[](int index) const
+{
+    if (index < 0 || index >= numberOfPeriods)
+    {
+        throw std::out_of_range("Invalid sales period index.");
+    }
+
+    return sales[index];
+}

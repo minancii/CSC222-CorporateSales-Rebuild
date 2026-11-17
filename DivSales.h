@@ -29,6 +29,13 @@ public:
 
     // Calculate total sales for this division.
     double getTotalSales() const;
+
+    // Read or change a sales value using its index.
+    double& operator[](int index);
+
+    // Read a sales value from a const object.
+    const double& operator[](int index) const;
+
 };
 
 #endif
