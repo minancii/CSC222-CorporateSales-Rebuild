@@ -274,6 +274,65 @@ int main()
         passed, total);
 
     cout << endl;
+    cout << "===== Static Corporate Total Tests =====" << endl;
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Corporate total starts at zero",
+        passed, total);
+
+    // Add the total of one division.
+    DivSales::addToCorporateTotal(quarterly.getTotalSales());
+
+    checkTest(DivSales::getCorporateTotal() == 575.5,
+        "Add first division total",
+        passed, total);
+
+    // Copying an object should not change the shared total.
+    DivSales totalCopy(quarterly);
+
+    checkTest(DivSales::getCorporateTotal() == 575.5,
+        "Copy constructor does not change corporate total",
+        passed, total);
+
+    // Assignment should not change the shared total either.
+    DivSales totalAssigned(1);
+    totalAssigned = quarterly;
+
+    checkTest(DivSales::getCorporateTotal() == 575.5,
+        "Assignment does not change corporate total",
+        passed, total);
+
+    // Changing a copied object's data should not
+    // automatically change the corporate total.
+    totalCopy[0] = 400.0;
+
+    checkTest(DivSales::getCorporateTotal() == 575.5 &&
+        quarterly[0] == 120.0,
+        "Changing a copy does not affect original or total",
+        passed, total);
+
+    // Clear the total before loading another dataset.
+    DivSales::resetCorporateTotal();
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Reset corporate total",
+        passed, total);
+
+    // Test adding two completed division totals.
+    DivSales::addToCorporateTotal(quarterly.getTotalSales());
+    DivSales::addToCorporateTotal(onePeriod.getTotalSales());
+
+    checkTest(DivSales::getCorporateTotal() == 594.75,
+        "Add totals from two divisions",
+        passed, total);
+
+    DivSales::resetCorporateTotal();
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Ready for next sales file",
+        passed, total);
+
+    cout << endl;
     cout << "Passed " << passed << " of " << total
         << " checks." << endl;
 

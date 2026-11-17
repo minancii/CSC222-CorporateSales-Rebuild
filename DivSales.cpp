@@ -1,6 +1,7 @@
 
 #include "DivSales.h"
 #include <stdexcept>
+double DivSales::corporateTotal = 0.0;
 
 DivSales::DivSales(int periods)
     : sales(nullptr), numberOfPeriods(periods)
@@ -93,4 +94,25 @@ DivSales& DivSales::operator=(const DivSales& other)
     numberOfPeriods = other.numberOfPeriods;
 
     return *this;
+}
+
+double DivSales::getCorporateTotal()
+{
+    return corporateTotal;
+}
+
+void DivSales::resetCorporateTotal()
+{
+    corporateTotal = 0.0;
+}
+
+void DivSales::addToCorporateTotal(double amount)
+{
+    if (amount < 0.0)
+    {
+        throw std::invalid_argument(
+            "Corporate sales amount cannot be negative.");
+    }
+
+    corporateTotal += amount;
 }

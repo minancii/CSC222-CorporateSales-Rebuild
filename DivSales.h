@@ -13,6 +13,10 @@ private:
     double* sales;
     int numberOfPeriods;
 
+    // Total sales shared by all DivSales objects.
+    static double corporateTotal;
+
+
 public:
     // Create an array with the requested number of periods.
     DivSales(int periods);
@@ -33,6 +37,16 @@ public:
 
     // Calculate total sales for this division.
     double getTotalSales() const;
+
+    // Get the total sales of all divisions.
+    static double getCorporateTotal();
+
+    // Clear the total before loading a new sales file.
+    static void resetCorporateTotal();
+
+    // Add one completed division's total.
+    static void addToCorporateTotal(double amount);
+
 
     // Read or change a sales value using its index.
     double& operator[](int index);
