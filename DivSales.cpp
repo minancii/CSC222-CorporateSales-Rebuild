@@ -58,3 +58,39 @@ const double& DivSales::operator[](int index) const
 
     return sales[index];
 }
+
+DivSales::DivSales(const DivSales& other)
+    : sales(nullptr), numberOfPeriods(other.numberOfPeriods)
+{
+    // Give the copied object its own memory.
+    sales = new double[numberOfPeriods];
+
+    for (int i = 0; i < numberOfPeriods; i++)
+    {
+        sales[i] = other.sales[i];
+    }
+}
+
+DivSales& DivSales::operator=(const DivSales& other)
+{
+    // Do nothing if the object is assigned to itself.
+    if (this == &other)
+    {
+        return *this;
+    }
+
+    // Allocate memory before deleting the old array.
+    double* newSales = new double[other.numberOfPeriods];
+
+    for (int i = 0; i < other.numberOfPeriods; i++)
+    {
+        newSales[i] = other.sales[i];
+    }
+
+    delete[] sales;
+
+    sales = newSales;
+    numberOfPeriods = other.numberOfPeriods;
+
+    return *this;
+}

@@ -187,6 +187,93 @@ int main()
         "Single-period array", passed, total);
 
     cout << endl;
+    cout << "===== Rule of Three Tests =====" << endl;
+
+    // Test the copy constructor.
+    DivSales copied(quarterly);
+
+    checkTest(copied.getNumberOfPeriods() == 4,
+        "Copy constructor keeps array size",
+        passed, total);
+
+    checkTest(copied[0] == 120.0 &&
+        copied[1] == 75.5 &&
+        copied[2] == 180.0 &&
+        copied[3] == 200.0,
+        "Copy constructor copies all values",
+        passed, total);
+
+    // The two arrays should have different addresses.
+    checkTest(&copied[0] != &quarterly[0],
+        "Copy constructor uses separate memory",
+        passed, total);
+
+    copied[0] = 999.0;
+
+    checkTest(quarterly[0] == 120.0 &&
+        copied[0] == 999.0,
+        "Changing copy does not change original",
+        passed, total);
+
+    // Test assignment between different array sizes.
+    monthly[0] = 50.0;
+    monthly[11] = 500.0;
+
+    monthly = quarterly;
+
+    checkTest(monthly.getNumberOfPeriods() == 4,
+        "Assignment updates array size",
+        passed, total);
+
+    checkTest(monthly[0] == 120.0 &&
+        monthly[1] == 75.5 &&
+        monthly[2] == 180.0 &&
+        monthly[3] == 200.0,
+        "Assignment copies all values",
+        passed, total);
+
+    checkTest(&monthly[0] != &quarterly[0],
+        "Assignment uses separate memory",
+        passed, total);
+
+    monthly[3] = 300.0;
+
+    checkTest(quarterly[3] == 200.0 &&
+        monthly[3] == 300.0,
+        "Changing assigned object does not change original",
+        passed, total);
+
+    // Test assigning an object to itself.
+    monthly = monthly;
+
+    checkTest(monthly.getNumberOfPeriods() == 4 &&
+        monthly[3] == 300.0,
+        "Self-assignment keeps the data",
+        passed, total);
+
+    // Test chained assignment.
+    DivSales first(1);
+    DivSales second(2);
+
+    first = second = quarterly;
+
+    checkTest(first.getNumberOfPeriods() == 4 &&
+        second.getNumberOfPeriods() == 4,
+        "Chained assignment updates both sizes",
+        passed, total);
+
+    checkTest(first[0] == 120.0 &&
+        second[3] == 200.0,
+        "Chained assignment copies values",
+        passed, total);
+
+    checkTest(&first[0] != &second[0] &&
+        &first[0] != &quarterly[0] &&
+        &second[0] != &quarterly[0],
+        "Chained assignment keeps separate arrays",
+        passed, total);
+
+    cout << endl;
     cout << "Passed " << passed << " of " << total
         << " checks." << endl;
 

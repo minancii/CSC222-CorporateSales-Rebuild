@@ -20,9 +20,13 @@ public:
     // Release the memory owned by the object.
     ~DivSales();
 
-    // Copying will be implemented in a later step.
-    DivSales(const DivSales&) = delete;
-    DivSales& operator=(const DivSales&) = delete;
+
+    // Make an independent copy of another DivSales object.
+    DivSales(const DivSales& other);
+
+    // Copy data into an existing DivSales object.
+    DivSales& operator=(const DivSales& other);
+
 
     // Return the number of sales periods.
     int getNumberOfPeriods() const;
