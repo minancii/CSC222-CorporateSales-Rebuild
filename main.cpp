@@ -7,6 +7,8 @@
 #include <fstream>
 #include <iomanip>
 #include <cmath>
+#include <cstdio>
+
 
 using namespace std;
 
@@ -29,16 +31,16 @@ void checkTest(bool result, string name, int& passed, int& total)
 
 void runSalesFileTest(const string& filename, int expectedPeriods,
     double expectedCorporateTotal, const double expectedDivTotals[6],
-    int& passed, int& total)
+    int& passed, int& total, bool expectError = false)
 {
     cout << "\n===== File Test: " << filename << " =====\n";
-
+    DivSales::resetCorporateTotal();
     ifstream inputFile(filename);
 
     if (!inputFile)
     {
         cout << "ERROR: Could not open " << filename << endl;
-        checkTest(false, "Open file", passed, total);
+        checkTest(expectError, "Open file", passed, total);
         return;
     }
 
@@ -49,7 +51,7 @@ void runSalesFileTest(const string& filename, int expectedPeriods,
     if (!(inputFile >> numberOfPeriods) || numberOfPeriods <= 0)
     {
         cout << "ERROR: Invalid period count." << endl;
-        checkTest(false, "Valid period count", passed, total);
+        checkTest(expectError, "Valid period count", passed, total);
         return;
     }
 
@@ -83,7 +85,7 @@ void runSalesFileTest(const string& filename, int expectedPeriods,
                     << d + 1 << ", period " << p + 1 << endl;
 
                 DivSales::resetCorporateTotal();
-                checkTest(false, "Valid sales data", passed, total);
+                checkTest(expectError, "Valid sales data", passed, total);
                 return;
             }
         }
@@ -93,13 +95,23 @@ void runSalesFileTest(const string& filename, int expectedPeriods,
             divisions[d].getTotalSales());
     }
 
+
     string extra;
 
     if (inputFile >> extra)
     {
         cout << "ERROR: Extra value in data file." << endl;
         DivSales::resetCorporateTotal();
-        checkTest(false, "Exact data count", passed, total);
+        checkTest(expectError, "Exact data count", passed, total);
+        return;
+    }
+
+    // Check if a bad file was incorrectly accepted.
+    if (expectError)
+    {
+        checkTest(false, "Invalid file should be rejected",
+            passed, total);
+        DivSales::resetCorporateTotal();
         return;
     }
 
@@ -107,6 +119,7 @@ void runSalesFileTest(const string& filename, int expectedPeriods,
 
     // Print all sales in a table.
     cout << fixed << setprecision(2);
+
     cout << "\n" << setw(10) << "Period";
 
     for (int d = 0; d < NUM_DIVISIONS; d++)
@@ -483,6 +496,84 @@ int main()
     runSalesFileTest(
         "Corporate_Sales_Monthly_Test_Data.txt",
         12, 8338700.0, monthlyTotals, passed, total);
+
+    cout << "\n===== Invalid File Tests =====" << endl;
+
+    // Create temporary files with incorrect sales data.
+    {
+        ofstream file("CSC222_Test_Invalid_Periods.txt");
+        file << "0\n";
+    }
+
+    {
+        ofstream file("CSC222_Test_Invalid_Negative.txt");
+        file << "1\n10 20 -5 40 50 60\n";
+    }
+
+    {
+        ofstream file("CSC222_Test_Invalid_Text.txt");
+        file << "1\n10 20 wrong 40 50 60\n";
+    }
+
+    {
+        ofstream file("CSC222_Test_Invalid_Short.txt");
+        file << "2\n10 20 30 40\n";
+    }
+
+    {
+        ofstream file("CSC222_Test_Invalid_Extra.txt");
+        file << "1\n10 20 30 40 50 60 70\n";
+    }
+
+    // Test a file that does not exist.
+    runSalesFileTest(
+        "CSC222_Test_Missing_File.txt",
+        1, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Missing file leaves total at zero", passed, total);
+
+    runSalesFileTest(
+        "CSC222_Test_Invalid_Periods.txt",
+        1, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Invalid period count leaves total at zero", passed, total);
+
+    runSalesFileTest(
+        "CSC222_Test_Invalid_Negative.txt",
+        1, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Negative sales leave total at zero", passed, total);
+
+    runSalesFileTest(
+        "CSC222_Test_Invalid_Text.txt",
+        1, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Text input leaves total at zero", passed, total);
+
+    runSalesFileTest(
+        "CSC222_Test_Invalid_Short.txt",
+        2, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Short file leaves total at zero", passed, total);
+
+    runSalesFileTest(
+        "CSC222_Test_Invalid_Extra.txt",
+        1, 0.0, quarterlyTotals, passed, total, true);
+
+    checkTest(DivSales::getCorporateTotal() == 0.0,
+        "Extra data leaves total at zero", passed, total);
+
+    // Remove the temporary test files.
+    remove("CSC222_Test_Invalid_Periods.txt");
+    remove("CSC222_Test_Invalid_Negative.txt");
+    remove("CSC222_Test_Invalid_Text.txt");
+    remove("CSC222_Test_Invalid_Short.txt");
+    remove("CSC222_Test_Invalid_Extra.txt");
 
     cout << endl;
     cout << "Passed " << passed << " of " << total

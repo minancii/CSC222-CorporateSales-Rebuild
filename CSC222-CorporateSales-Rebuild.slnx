@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="CSC222-CorporateSales-Rebuild.vcxproj" />
+  <Project Path="CSC222-CorporateSales-Rebuild.vcxproj" Id="3bceb694-74fd-4710-ac27-1500ce529a9e" />
 </Solution>
