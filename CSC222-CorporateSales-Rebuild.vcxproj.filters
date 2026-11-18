@@ -27,4 +27,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Corporate_Sales_Monthly_Test_Data.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Corporate_Sales_Quarterly_Test_Data.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>

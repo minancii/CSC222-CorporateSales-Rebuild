@@ -145,6 +145,10 @@
     <ClCompile Include="DivSales.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Corporate_Sales_Monthly_Test_Data.txt" />
+    <Text Include="Corporate_Sales_Quarterly_Test_Data.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

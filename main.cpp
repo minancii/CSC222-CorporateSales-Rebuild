@@ -4,6 +4,9 @@
 #include <stdexcept>
 #include "DivSales.h"
 #include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
 
 using namespace std;
 
@@ -22,6 +25,133 @@ void checkTest(bool result, string name, int& passed, int& total)
     {
         cout << "FAIL" << endl;
     }
+}
+
+void runSalesFileTest(const string& filename, int expectedPeriods,
+    double expectedCorporateTotal, const double expectedDivTotals[6],
+    int& passed, int& total)
+{
+    cout << "\n===== File Test: " << filename << " =====\n";
+
+    ifstream inputFile(filename);
+
+    if (!inputFile)
+    {
+        cout << "ERROR: Could not open " << filename << endl;
+        checkTest(false, "Open file", passed, total);
+        return;
+    }
+
+    checkTest(true, "Open file", passed, total);
+
+    int numberOfPeriods = 0;
+
+    if (!(inputFile >> numberOfPeriods) || numberOfPeriods <= 0)
+    {
+        cout << "ERROR: Invalid period count." << endl;
+        checkTest(false, "Valid period count", passed, total);
+        return;
+    }
+
+    checkTest(numberOfPeriods == expectedPeriods,
+        "Period count", passed, total);
+
+    const int NUM_DIVISIONS = 6;
+
+    DivSales divisions[NUM_DIVISIONS] = {
+        DivSales(numberOfPeriods),
+        DivSales(numberOfPeriods),
+        DivSales(numberOfPeriods),
+        DivSales(numberOfPeriods),
+        DivSales(numberOfPeriods),
+        DivSales(numberOfPeriods)
+    };
+
+    // Start a new corporate total for this file.
+    DivSales::resetCorporateTotal();
+
+    for (int d = 0; d < NUM_DIVISIONS; d++)
+    {
+        for (int p = 0; p < numberOfPeriods; p++)
+        {
+            // Read straight into the private dynamic array.
+            if (!(inputFile >> divisions[d][p]) ||
+                !isfinite(divisions[d][p]) ||
+                divisions[d][p] <= 0.0)
+            {
+                cout << "ERROR: Invalid sales value at division "
+                    << d + 1 << ", period " << p + 1 << endl;
+
+                DivSales::resetCorporateTotal();
+                checkTest(false, "Valid sales data", passed, total);
+                return;
+            }
+        }
+
+        // Add each completed division only once.
+        DivSales::addToCorporateTotal(
+            divisions[d].getTotalSales());
+    }
+
+    string extra;
+
+    if (inputFile >> extra)
+    {
+        cout << "ERROR: Extra value in data file." << endl;
+        DivSales::resetCorporateTotal();
+        checkTest(false, "Exact data count", passed, total);
+        return;
+    }
+
+    checkTest(true, "Valid sales data and count", passed, total);
+
+    // Print all sales in a table.
+    cout << fixed << setprecision(2);
+    cout << "\n" << setw(10) << "Period";
+
+    for (int d = 0; d < NUM_DIVISIONS; d++)
+    {
+        cout << setw(14) << ("Division " + to_string(d + 1));
+    }
+
+    cout << endl;
+
+    for (int p = 0; p < numberOfPeriods; p++)
+    {
+        cout << setw(10) << p + 1;
+
+        for (int d = 0; d < NUM_DIVISIONS; d++)
+        {
+            cout << setw(14) << divisions[d][p];
+        }
+
+        cout << endl;
+    }
+
+    cout << setw(10) << "Total";
+
+    for (int d = 0; d < NUM_DIVISIONS; d++)
+    {
+        cout << setw(14) << divisions[d].getTotalSales();
+    }
+
+    cout << "\nCorporate total: $"
+        << DivSales::getCorporateTotal() << "\n\n";
+
+    // Compare calculated totals with known results.
+    for (int d = 0; d < NUM_DIVISIONS; d++)
+    {
+        checkTest(
+            fabs(divisions[d].getTotalSales() -
+                expectedDivTotals[d]) < 0.01,
+            "Division " + to_string(d + 1) + " total",
+            passed, total);
+    }
+
+    checkTest(
+        fabs(DivSales::getCorporateTotal() -
+            expectedCorporateTotal) < 0.01,
+        "Corporate total", passed, total);
 }
 
 int main()
@@ -331,6 +461,28 @@ int main()
     checkTest(DivSales::getCorporateTotal() == 0.0,
         "Ready for next sales file",
         passed, total);
+
+    cout << endl;
+    cout << "===== Sales File Integration Tests =====" << endl;
+
+    // Expected totals for each division.
+    const double quarterlyTotals[6] = {
+        548550.0, 430500.0, 649200.0,
+        390800.0, 559400.0, 485700.0
+    };
+
+    const double monthlyTotals[6] = {
+        1434850.0, 1179300.0, 1806600.0,
+        1062600.0, 1556650.0, 1298700.0
+    };
+
+    runSalesFileTest(
+        "Corporate_Sales_Quarterly_Test_Data.txt",
+        4, 3064150.0, quarterlyTotals, passed, total);
+
+    runSalesFileTest(
+        "Corporate_Sales_Monthly_Test_Data.txt",
+        12, 8338700.0, monthlyTotals, passed, total);
 
     cout << endl;
     cout << "Passed " << passed << " of " << total
